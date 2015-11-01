@@ -14,7 +14,10 @@ import qualified Data.IntMap as IMap
 -}
 
 between :: Ord a => a -> a -> a -> Bool     
-between l v u = l <= v && v <= u     
+between l v u = l <= v && v <= u   
+
+toLookup :: (Ord key) => (a -> key) -> (a -> v) -> [a] -> Map.Map key [v]
+toLookup getKey getValue = Map.fromListWith (++) . map (\x-> (getKey x, [getValue x]))
 
 generateDict1 :: String -> [[String]]
 generateDict1 = 
@@ -37,17 +40,17 @@ generateDict3 =
         
 generateDict4 :: B.ByteString -> Map.Map Int [B.ByteString]      
 generateDict4 =
-    Map.fromListWith (++) . map (\x-> (B.length x, [B.map toUpper x])) .
+    toLookup B.length (B.map toUpper) .
     filter (\x ->between 4 (B.length x) 15) . B.words
         
 generateDict5 :: String -> Map.Map Int [String]   
 generateDict5 =
-    Map.fromListWith (++) . map (\x-> (length x, [map toUpper x])) .
+    toLookup length (map toUpper) .
     filter (\x ->between 4 (length x) 15) . words    
 
 generateDict6 :: String -> Map.Map Int [String]   
 generateDict6 =
-    Map.fromListWith (++) . map (\(l,x)-> (l, [map toUpper x])) .
+    toLookup fst (map toUpper . snd) .
     filter (\x ->between 4 (fst x) 15) . 
     map(\x -> (length x, x)) . words
     
@@ -61,7 +64,7 @@ generateDict7 =
 
 generateDict8 :: B.ByteString -> Map.Map Int [B.ByteString]   
 generateDict8 =
-    Map.fromListWith (++) . map (\(l,x)-> (l, [B.map toUpper x])) .
+    toLookup fst (B.map toUpper . snd) .
     filter (\x ->between 4 (fst x) 15) . 
     map(\x -> (B.length x, x)) . B.words    
     
@@ -74,7 +77,6 @@ generateDict10 :: String -> IMap.IntMap [String]
 generateDict10 =
     IMap.fromListWith (++) . map (\x-> (length x, [map toUpper x])) .
     filter (\x ->between 4 (length x) 15) . words
-    
     
 main::IO()    
 main = do
